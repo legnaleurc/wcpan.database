@@ -14,7 +14,7 @@ class TestSQLite(ut.TestCase):
             self._db = await stack.enter_async_context(wd.connect('sqlite:///:memory:'))
             self._stack = stack.pop_all()
 
-        async with u.ReadWrite(self._db) as query:
+        async with wd.ReadWrite(self._db) as query:
             for sql in u.SQL_CREATE_TABLE:
                 await query.execute(sql)
 
@@ -25,12 +25,12 @@ class TestSQLite(ut.TestCase):
     @u.sync
     async def testException(self):
         with self.assertRaises(Exception):
-            async with u.ReadOnly(self._db) as query:
+            async with wd.ReadOnly(self._db) as query:
                 await query.execute('SELECT;')
 
     @u.sync
     async def testExecute(self):
-        async with u.ReadWrite(self._db) as query:
+        async with wd.ReadWrite(self._db) as query:
             await query.execute('''
                 INSERT INTO people
                 (id, name)
@@ -38,7 +38,7 @@ class TestSQLite(ut.TestCase):
                 (?, ?)
             ;''', (1, 'alice'))
 
-        async with u.ReadOnly(self._db) as query:
+        async with wd.ReadOnly(self._db) as query:
             await query.execute('''
                 SELECT name FROM people WHERE id=?
             ;''', (1,))
